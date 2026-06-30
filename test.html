@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>翠玉录模拟器-自选关闭完美版</title>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <style>
+        body {
+            background-color: #16222a;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 5px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        /* 主神庙长方形容器 */
+        .temple-wrapper {
+            width: 100%;
+            max-width: 460px;
+            background: linear-gradient(180deg, #182e3b 0%, #0a131a 100%);
+            box-sizing: border-box;
+            padding: 25px 25px 25px 22px; 
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            border-bottom: 8px solid #233b47; 
+        }
+        
+        /* 外围墙柱 */
+        .temple-wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 16px;
+            background-color: #233b47;
+            border-bottom: 3px double #3b5f70;
+            z-index: 4;
+        }
+        .temple-pillar-l, .temple-pillar-r {
+            position: absolute;
+            top: 16px; bottom: 0;
+            width: 14px;
+            background: linear-gradient(90deg, #1d333f 0%, #294554 50%, #172833 100%);
+            border-left: 1px solid #325163;
+            border-right: 1px solid #1c2e38;
+            z-index: 4;
+        }
+        .temple-pillar-l { left: 0; }
+        .temple-pillar-r { right: 0; } 
+
+        .header-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(78, 126, 150, 0.2);
+            padding-right: 50px;
+            box-sizing: border-box;
+        }
+        .top-buttons {
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 5px;
+            box-sizing: border-box;
+        }
+        .rect-btn {
+            background: #bfa980;
+            color: #1a2630;
+            border: none;
+            padding: 5px 14px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+        .rect-btn.active-mode {
+            background: #64ffda;
+            box-shadow: 0 0 8px #64ffda;
+            color: #1a2630;
+        }
+        .side-buttons {
+            position: absolute;
+            left: 25px;
+            top: 445px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 5;
+        }
+
+        /* ======= 💥 进度条与按钮位置完好保留你调整好的数值 ======= */
+        .inner-progress-zone {
+            position: absolute;
+            right: 16px;
+            top: 90px; 
+            height: 385px; 
+            width: 65px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+        .btn-reset-pos {
+            position: absolute;
+            right: 21px;
+            top: 490px; 
+            z-index: 11;
+        }
+        .progress-num { font-size: 11px; font-weight: bold; color: #ebdcb9; margin-bottom: 2px; }
+        .progress-track {
+            width: 10px;
+            flex-grow: 1;
+            background: #101b22;
+            border: 1px solid #2e4d5c;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+        .progress-fill {
+            width: 100%;
+            height: 0%; 
+            background: linear-gradient(0deg, #3498db 0%, #64ffda 100%);
+            position: absolute;
+            bottom: 0;
+            transition: height 0.2s ease;
+            box-shadow: 0 0 6px #64ffda;
+        }
+        .progress-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            width: 100%;
+        }
+        .btn-input-count {
+            background: #2a3e4a;
+            border: 1px solid #bfa980;
+            color: #ebdcb9;
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 3px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .stone-glow-btn {
+            background: #f1c40f;
+            color: #1a2630;
+            border: none;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 0 10px #f1c40f;
+            animation: pulseGlow 1.5s infinite;
+            display: none; 
+        }
+
+        /* ======= 金字塔骨架画布 ======= */
+        .canvas-area {
+            width: 100%;
+            height: 420px;
+            position: relative;
+            margin: 10px 0;
+            padding-right: 45px;
+            box-sizing: border-box;
+        }
+        .map-line {
+            position: absolute;
+            background-color: #2e4d5c;
+            box-shadow: 0 0 3px rgba(46,77,92,0.5);
+        }
+        .v-stem { width: 2px; height: 190px; left: 45%; top: 60px; transform: translateX(-50%); }
+        .cross-1 { width: 44px; height: 2px; left: 45%; top: 100px; transform: translateX(-50%); }
+        .cross-2 { width: 44px; height: 2px; left: 45%; top: 180px; transform: translateX(-50%); }
+        .beam-main { width: 72%; height: 2px; left: 9%; top: 255px; }
+        .branch-1 { width: 2px; height: 20px; left: 12.5%; top: 257px; }
+        .branch-2 { width: 2px; height: 20px; left: 34.2%; top: 257px; }
+        .branch-3 { width: 2px; height: 20px; left: 55.8%; top: 257px; }
+        .branch-4 { width: 2px; height: 20px; left: 77.5%; top: 257px; }
+
+        /* 节点定位 */
+        .node {
+            position: absolute;
+            transform: translateX(-50%);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+        .layer-1   { left: 45%;   top: 5px; }  
+        .layer-2-l { left: 18%;   top: 90px; }  
+        .layer-2-r { left: 72%;   top: 85px; }  
+        .layer-3-l { left: 18%;   top: 170px; } 
+        .layer-3-r { left: 72%;   top: 170px; }  
+        .layer-4-1 { left: 12.5%; top: 270px; } 
+        .layer-4-2 { left: 34.2%; top: 270px; } 
+        .layer-4-3 { left: 55.8%; top: 270px; } 
+        .layer-4-4 { left: 77.5%; top: 270px; } 
+
+        .totem-svg {
+            width: 48px;
+            height: 38px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+        .totem-svg.large-spec {
+            width: 64px;
+            height: 50px;
+            margin-bottom: 2px;
+        }
+        .totem-svg path, .totem-svg line, .totem-svg polyline, .totem-svg circle {
+            fill: none;
+            stroke: #2e4d5c;
+            stroke-width: 2.2; 
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: all 0.3s ease;
+        }
+        .totem-svg .filled-part {
+            fill: #2e4d5c;
+            stroke: none;
+            transition: all 0.3s ease;
+        }
+
+        /* 发光状态 */
+        .node.completed .totem-svg path, 
+        .node.completed .totem-svg line, 
+        .node.completed .totem-svg polyline, 
+        .node.completed .totem-svg circle {
+            stroke: #64ffda;
+            filter: drop-shadow(0 0 5px #64ffda);
+        }
+        .node.completed .totem-svg .filled-part {
+            fill: #64ffda;
+        }
+
+        .triangle-group {
+            display: flex;
+            gap: 5px;
+        }
+        .triangle {
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 14px solid #1a2933; 
+            transition: all 0.2s ease;
+        }
+        .triangle.active {
+            border-bottom-color: #64ffda;
+            filter: drop-shadow(0 0 6px #64ffda);
+        }
+        
+        /* 底部状态提示总框 */
+        .result-container {
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            padding: 12px 0;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            transition: background-color 0.2s ease;
+        }
+        .result-container.deny-mode-active {
+            background-color: rgba(139, 45, 34, 0.85);
+            border: 1px solid #e74c3c;
+        }
+        .result-container.custom-mode-active {
+            background-color: rgba(30, 75, 65, 0.85);
+            border: 1px solid #64ffda;
+        }
+        .result-container.stone-mode-active {
+            background-color: rgba(180, 130, 20, 0.85);
+            border: 1px solid #f1c40f;
+        }
+
+        .result-label {
+            color: #4ee0cd; 
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-align: center;
+        }
+        .result-container.deny-mode-active .result-label,
+        .result-container.custom-mode-active .result-label,
+        .result-container.stone-mode-active .result-label {
+            color: #ffffff;
+        }
+
+        .bottom-actions {
+            width: 100%;
+            display: flex;
+            gap: 15px;
+        }
+        .action-btn {
+            flex: 1;
+            background-color: #d4b680;
+            color: #1a2630;
+            border: none;
+            padding: 13px 0;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .tip-text {
+            font-size: 12px;
+            color: #8fa1b0;
+            margin-top: 12px;
+            height: 16px;
+            text-align: center;
+        }
+
+        /* 遮罩层 */
+        .popup-modal {
+            position: fixed;
+            top: 0; bottom: 0; left: 0; right: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .modal-content {
+            background: #203545;
+            border: 2px solid #bfa980;
+            border-radius: 6px;
+            width: 100%;
+            max-width: 380px;
+            padding: 16px;
+            box-sizing: border-box;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+            position: relative; 
+        }
+        .close-modal-x {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            color: #bfa980;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.15s ease;
+        }
+        .close-modal-x:hover {
+            color: #e74c3c;
+        }
+        .modal-title {
+            text-align: center;
+            color: #ebdcb9;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(191,169,128,0.3);
+            padding-bottom: 8px;
+        }
+        .reward-tip-info {
+            font-size: 11px;
+            color: #ebdcb9;
+            text-align: center;
+            margin-bottom: 12px;
+            background: rgba(191,169,128,0.15);
+            padding: 4px;
+            border-radius: 4px;
+        }
+        .reward-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin: 10px 0;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .reward-item.selected {
+            background: rgba(100, 255, 218, 0.15) !important;
+            border-color: #64ffda !important;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 4px #f1c40f; }
+            50% { box-shadow: 0 0 14px #f1c40f; }
+            100% { box-shadow: 0 0 4px #f1c40f; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="temple-wrapper">
+        <div class="temple-pillar-l"></div>
+        <div class="temple-pillar-r"></div>
+
+        <button class="rect-btn btn-reset-pos" onclick="resetGame()">重置</button>
+
+        <div class="inner-progress-zone">
+            <div class="progress-num">360</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-indicator"></div>
+            </div>
+            <div class="progress-num" style="margin-bottom: 6px;" id="current-p-num">0</div>
+            
+            <div class="progress-actions">
+                <button class="btn-input-count" onclick="promptManualProgress()">输入次数</button>
+                <button class="stone-glow-btn" id="stone-btn" onclick="activate贤者之石Power()">石</button>
+            </div>
+        </div>
+
+        <div class="header-bar">
+            <div id="stat-left">棱锥:10 &nbsp;&nbsp; 魔晶:0 &nbsp;&nbsp; 启示:0次</div><div style="font-size: 12px; color: #4ee0cd; font-weight: bold;"><span id="busuanzi_container_site_pv">👁️ 访问量:<span id="busuanzi_value_site_pv">...</span>次</span></div>
+        </div>
+
+        <div class="top-buttons">
+            <button class="rect-btn" style="visibility: hidden;">普通模式</button> 
+        </div>
+
+        <div class="side-buttons">
+            <button class="rect-btn" id="custom-mode-btn" onclick="toggleCustomMode()" style="background:#507b93; color:#fff; margin-bottom:2px;">自定义模式</button>
+            <button class="rect-btn" onclick="openRulesModal()">说明</button>
+        </div>
+
+        <div class="canvas-area">
+            <div class="map-line v-stem"></div>
+            <div class="map-line cross-1"></div>
+            <div class="map-line cross-2"></div>
+            <div class="map-line beam-main"></div>
+            <div class="map-line branch-1"></div>
+            <div class="map-line branch-2"></div>
+            <div class="map-line branch-3"></div>
+            <div class="map-line branch-4"></div>
+
+            <div class="node layer-1" id="node-0" onclick="handleNodeInteraction(0)">
+                <svg class="totem-svg" viewBox="0 0 60 40">
+                    <path d="M 5,12 Q 30,2 55,12" />
+                    <path d="M 8,18 Q 30,4 52,18" />
+                    <path d="M 8,18 Q 30,32 52,18" />
+                    <ellipse class="filled-part" cx="30" cy="18" rx="7" ry="7" />
+                    <path d="M 25,24 L 21,37 Q 12,35 12,28" />
+                    <path d="M 37,24 L 42,34" />
+                </svg>
+                <div class="triangle-group" id="god-0"></div>
+            </div>
+            
+            <div class="node layer-2-l" id="node-1" onclick="handleNodeInteraction(1)">
+                <svg class="totem-svg" viewBox="0 0 60 40">
+                    <path d="M 20,38 L 24,14 Q 25,6 19,6 Q 14,8 16,16 L 20,38 Z" />
+                    <line x1="17.5" y1="18" x2="21.5" y2="16" />
+                    <line x1="18.5" y1="25" x2="22.5" y2="23" />
+                    <line x1="19.5" y1="32" x2="23.5" y2="30" />
+                    <circle class="filled-part" cx="19" cy="6" r="2.5" />
+                    <path d="M 36,38 L 40,14 Q 41,6 35,6 Q 30,8 32,16 L 36,38 Z" />
+                    <line x1="33.5" y1="18" x2="37.5" y2="16" />
+                    <line x1="34.5" y1="25" x2="38.5" y2="23" />
+                    <line x1="39.5" y1="32" x2="43.5" y2="30" />
+                    <circle class="filled-part" cx="35" cy="6" r="2.5" />
+                </svg>
+                <div class="triangle-group" id="god-1"></div>
+            </div>
+
+            <div class="node layer-2-r" id="node-2" onclick="handleNodeInteraction(2)">
+                <svg class="totem-svg" viewBox="0 0 80 60">
+                    <path d="M 62,10 C 58,8 55,10 54,14 C 52,18 47,19 41,19 C 32,19 28,21 26,24 C 23,27 20,32 24,35" />
+                    <path d="M 24,35 C 29,38 34,38 38,36 C 44,33 48,33 58,35" />
+                    <path d="M 44,19 C 48,32 47,48 45,54" />
+                    <path d="M 50,17 C 55,32 54,48 51,54" />
+                    <path d="M 56,15 C 62,30 60,48 57,54" />
+                    <path d="M 62,10 C 69,28 66,48 63,54" />
+                    <ellipse class="filled-part" cx="36" cy="25" rx="2" ry="1.2" />
+                </svg>
+                <div class="triangle-group" id="god-2"></div>
+            </div>
+            
+            <div class="node layer-3-l" id="node-3" onclick="handleNodeInteraction(3)">
+                <svg class="totem-svg large-spec" viewBox="0 0 80 60">
+                    <circle cx="40" cy="28" r="18" />
+                    <path d="M 36,10 L 40,7 L 44,10 L 40,13 Z" />
+                    <path d="M 26,20 L 22,23" />
+                    <path d="M 25,34 L 21,37" />
+                    <path d="M 54,20 L 58,23" />
+                    <path d="M 55,34 L 59,37" />
+                    <circle class="filled-part" cx="40" cy="10" r="1.5" />
+                </svg>
+                <div class="triangle-group" id="god-3"></div>
+            </div>
+
+            <div class="node layer-3-r" id="node-4" onclick="handleNodeInteraction(4)">
+                <svg class="totem-svg" viewBox="0 0 80 60">
+                    <path d="M 23,12 L 27,19 L 24,24 L 32,24" />
+                    <path d="M 33,11 L 30,19 L 32,24" />
+                    <path d="M 30,19 L 55,19 Q 62,23 60,34 L 56,46" />
+                    <path d="M 32,24 Q 40,28 46,28 Q 54,28 54,34" />
+                    <line x1="33" y1="24" x2="25" y2="46" />
+                    <line x1="36" y1="24" x2="31" y2="46" />
+                    <line x1="54" y1="34" x2="48" y2="46" />
+                    <line x1="57" y1="34" x2="62" y2="46" />
+                    <path d="M 60,32 Q 62,38 60,43" />
+                </svg>
+                <div class="triangle-group" id="god-4"></div>
+            </div>
+            
+            <div class="node layer-4-1" id="node-5" onclick="handleNodeInteraction(5)">
+                <svg class="totem-svg" viewBox="0 0 60 40">
+                    <path d="M 18,36 L 42,8 Q 45,5 42,3 Q 39,2 37,5 L 35,8" />
+                    <path d="M 42,36 L 18,8" />
+                    <circle class="filled-part" cx="18" cy="8" r="2" />
+                    <path d="M 18,8 L 12,14" />
+                    <path d="M 18,8 L 15,16" />
+                    <path d="M 18,8 L 19,17" />
+                </svg>
+                <div class="triangle-group" id="god-5"></div>
+            </div>
+
+            <div class="node layer-4-2" id="node-6" onclick="handleNodeInteraction(6)">
+                <svg class="totem-svg" viewBox="0 0 60 40">
+                    <path d="M 42,12 Q 35,5 28,12 Q 22,18 28,24 Q 38,28 32,36 Q 28,38 24,35" />
+                    <path d="M 42,12 Q 46,12 44,8 L 38,10" />
+                </svg>
+                <div class="triangle-group" id="god-6"></div>
+            </div>
+
+            <div class="node layer-4-3" id="node-7" onclick="handleNodeInteraction(7)">
+                <svg class="totem-svg" viewBox="0 0 60 40">
+                    <path d="M 45,36 L 45,14 L 40,6 L 36,15 L 18,17 L 18,22 L 26,24 L 34,24 L 34,36" />
+                    <line x1="38" y1="20" x2="38" y2="36" />
+                    <line x1="41" y1="18" x2="41" y2="36" />
+                    <circle class="filled-part" cx="30" cy="18" r="1.2" />
+                </svg>
+                <div class="triangle-group" id="god-7"></div>
+            </div>
+
+            <div class="node layer-4-4" id="node-8" onclick="handleNodeInteraction(8)">
+                <svg class="totem-svg" viewBox="0 0 60 40">
+                    <circle cx="30" cy="6" r="4" />
+                    <path d="M 22,12 L 38,12 L 34,36 L 26,36 Z" />
+                    <line x1="22" y1="12" x2="34" y2="36" />
+                    <line x1="38" y1="12" x2="26" y2="36" />
+                    <line x1="24" y1="18" x2="36" y2="18" />
+                    <line x1="25" y1="27" x2="35" y2="27" />
+                    <circle class="filled-part" cx="30" cy="6" r="1.5" />
+                </svg>
+                <div class="triangle-group" id="god-8"></div>
+            </div>
+        </div>
+
+        <div class="result-container" id="info-board">
+            <div class="result-label" id="alchemy-result">失败炼成</div>
+        </div>
+
+        <div class="bottom-actions" id="btn-group-standard">
+            <button class="action-btn" style="background:#526b7c; color:#a0b4c2; cursor:not-allowed;">等待炼成</button>
+            <button class="action-btn" id="reveal-main-btn" onclick="doReveal()">启示</button>
+        </div>
+        
+        <div class="bottom-actions" id="btn-group-reveal" style="display: none;">
+            <button class="action-btn" id="claim-btn-node" onclick="trigger自选SettleWindow()">即刻炼成</button>
+            <button class="action-btn" id="deny-toggle-btn" onclick="toggleDenyMode()">否定</button>
+        </div>
+
+        <div class="bottom-actions" id="btn-group-custom" style="display: none;">
+            <button class="action-btn" onclick="trigger自选SettleWindow()">测试自选奖励</button>
+        </div>
+
+        <div class="tip-text" id="bottom-tip" style="visibility: hidden;">请点击图案执行否定</div>
+    </div>
+
+    <div class="popup-modal" id="help-modal">
+        <div class="modal-content">
+            <div class="modal-title">翠玉录炼金规则说明</div>
+            <div class="reward-tip-info">
+                <p>1. 炼金术所必须的“真理”和“法则”由九柱神之“律”组成。</p>
+                <p>2. 三个相同的律可以组成“真理”。一个父或母的“律” and 两个不同的后裔的“律”可以组成“法则”。由拉、舒、泰芙努特组成的“法则”为“黄金法则”。</p>
+                <p>3. 炼金开始后随机点亮 5 个“律”，之后可以通过启示随机点亮其他“律”。进度达到360次可解锁<strong>【贤者之石】</strong>功能，直接任意自选点亮一个律凑齐核心法则！</p>
+            </div>
+            <button onclick="closeRulesModal()" style="width:100%; background:#bfa980; color:#1a2630; border:none; padding:8px; font-weight:bold; border-radius:4px; cursor:pointer;">关闭说明</button>
+        </div>
+    </div>
+
+    <div class="popup-modal" id="settle-modal">
+        <div class="modal-content">
+            <div class="close-modal-x" onclick="abortSettleWindow()">✕</div>
+            <div class="modal-title" id="settle-title">自选炼成奖品</div>
+            <div class="reward-tip-info">请在下方奖励池中手动点击挑选一个您最想要的：</div>
+            <div id="self-select-reward-pool-area"></div>
+            <button onclick="confirmAndClaimSelectedReward()" style="width:100%; margin-top:10px; background:#bfa980; color:#1a2630; border:none; padding:12px; font-weight:bold; border-radius:4px; cursor:pointer; letter-spacing:1px;">确认收下自选奖励</button>
+        </div>
+    </div>
+
+<script>
+    function getCost(gear) {
+        let lz = 10 * Math.pow(2, gear - 1);
+        let mj = lz / 2;
+        return { lz: lz, mj: mj };
+    }
+
+    const pools = {
+        "奇迹炼成": [
+            { name: "星神战车", count: "1个" }, { name: "琼娥-乘风归", count: "1个" },
+            { name: "奇美拉", count: "1个" }, { name: "库露娜", count: "1个" },
+            { name: "辉光御座", count: "1个" }, { name: "尼德霍格", count: "1个" },
+            { name: "应龙宝宝", count: "1个" }
+        ],
+        "大师炼成": [
+            { name: "古墓头饰", count: "1个" }, { name: "古墓上装", count: "1个" },
+            { name: "古墓下装", count: "1个" }, { name: "藏宝卷封", count: "16个" }
+        ],
+        "杰出炼成": [
+            { name: "进化果实碎片", count: "4个" }, { name: "传送卷轴", count: "100个" },
+            { name: "部落传送石", count: "150个" }, { name: "藏宝卷封", count: "6个" }
+        ],
+        "稀有炼成": [
+            { name: "太阳碎片", count: "1个" }, { name: "气雨之息", count: "3个" },
+            { name: "苁蓉花", count: "1个" }, { name: "藏宝卷封", count: "2个" }
+        ],
+        "普通炼成": [
+            { name: "圣甲虫", count: "1个" }, { name: "诅咒附魔师I", count: "1个" },
+            { name: "机械附魔师I", count: "1个" }, { name: "城邦币", count: "3个" }
+        ],
+        "失败炼成": [
+            { name: "祖母绿矿", count: "5个" }, { name: "诅咒棱锥", count: "5个" },
+            { name: "魔晶", count: "5个" }, { name: "城邦币", count: "1个" }
+        ]
+    };
+
+    let litPoints = []; 
+    let revealCount = 0; 
+    let isDenyingState = false;   
+    let isCustomMode = false;     
+    let isStonePowerActive = false; 
+    let isStoneSettled = false; 
+    
+    let currentProgressCount = 0; 
+    let currentAlchemyText = "失败炼成"; 
+    let selectedRewardItemIndex = -1;
+
+    function openRulesModal() { document.getElementById('help-modal').style.display = 'flex'; }
+    function closeRulesModal() { document.getElementById('help-modal').style.display = 'none'; }
+
+    function initTrianglesDom() {
+        for(let godId = 0; godId < 9; godId++) {
+            let container = document.getElementById(`god-${godId}`);
+            container.innerHTML = '';
+            for(let i = 0; i < 3; i++) {
+                let tri = document.createElement('div');
+                tri.className = 'triangle';
+                container.appendChild(tri);
+            }
+        }
+    }
+
+    function resetGame() {
+        if(isCustomMode) toggleCustomMode();
+        litPoints = [];
+        revealCount = 0;
+        isDenyingState = false;
+        isStonePowerActive = false;
+        isStoneSettled = false; 
+        while(litPoints.length < 5) {
+            let randIdx = Math.floor(Math.random() * 27);
+            if(!litPoints.includes(randIdx)) litPoints.push(randIdx);
+        }
+        updateUI();
+    }
+
+    function toggleCustomMode() {
+        isCustomMode = !isCustomMode;
+        isDenyingState = false; 
+        isStonePowerActive = false;
+        isStoneSettled = false;
+        let btn = document.getElementById('custom-mode-btn');
+        let board = document.getElementById('info-board');
+        
+        if(isCustomMode) {
+            btn.classList.add('active-mode');
+            btn.innerText = "退出自定义";
+            board.className = 'result-container custom-mode-active';
+            litPoints = []; 
+        } else {
+            btn.classList.remove('active-mode');
+            btn.innerText = "自定义模式";
+            board.className = 'result-container';
+            resetGame();
+        }
+        updateUI();
+    }
+
+    function handleNodeInteraction(godId) {
+        if(isStonePowerActive) {
+            let activeInGod = litPoints.filter(p => Math.floor(p / 3) === godId);
+            if(activeInGod.length < 3) {
+                for(let i=0; i<3; i++) {
+                    let pIdx = godId * 3 + i;
+                    if(!litPoints.includes(pIdx)) { litPoints.push(pIdx); break; }
+                }
+                isStonePowerActive = false; 
+                isStoneSettled = true; 
+                currentProgressCount = 0; 
+                updateUI(); 
+            }
+            return;
+        }
+
+        if(isCustomMode) {
+            let activeInGod = litPoints.filter(p => Math.floor(p / 3) === godId);
+            if(activeInGod.length < 3) {
+                for(let i=0; i<3; i++) {
+                    let pIdx = godId * 3 + i;
+                    if(!litPoints.includes(pIdx)) { pIdx = godId * 3 + i; if(!litPoints.includes(pIdx)) { litPoints.push(pIdx); break; } }
+                }
+            } else {
+                litPoints = litPoints.filter(p => Math.floor(p / 3) !== godId);
+            }
+            updateUI();
+            return;
+        }
+
+        if(litPoints.length === 6 && isDenyingState) {
+            let activeInGod = litPoints.filter(p => Math.floor(p / 3) === godId);
+            if(activeInGod.length > 0) {
+                let target = activeInGod[activeInGod.length - 1];
+                litPoints = litPoints.filter(p => p !== target);
+                isDenyingState = false; 
+                updateUI();
+            }
+        }
+    }
+
+    function doReveal() {
+        if(isCustomMode || litPoints.length >= 6) return; 
+        let unlitPoints = [];
+        for(let i = 0; i < 27; i++) { if(!litPoints.includes(i)) unlitPoints.push(i); }
+        
+        let godScores = Array(9).fill(0);
+        litPoints.forEach(pt => godScores[Math.floor(pt / 3)]++);
+        
+        let weights = [];
+        let totalWeight = 0;
+        unlitPoints.forEach(pt => {
+            let godId = Math.floor(pt / 3);
+            let weight = (godScores[godId] > 0) ? 0.5 : 1.0;
+            weights.push({ pt: pt, w: weight });
+            totalWeight += weight;
+        });
+        
+        let randRoll = Math.random() * totalWeight;
+        let currentSum = 0;
+        let targetPoint = -1;
+        for(let i = 0; i < weights.length; i++) {
+            currentSum += weights[i].w;
+            if(randRoll <= currentSum) { targetPoint = weights[i].pt; break; }
+        }
+
+        if(targetPoint !== -1) {
+            litPoints.push(targetPoint);
+            revealCount++;
+            if(currentProgressCount < 360) currentProgressCount++;
+            updateUI();
+        }
+    }
+
+    function toggleDenyMode() {
+        if(isCustomMode || litPoints.length !== 6) return;
+        isDenyingState = !isDenyingState;
+        updateUI();
+    }
+
+    function promptManualProgress() {
+        let input = prompt("请输入指定的炼金判定次数（0 - 360）：", currentProgressCount);
+        if (input !== null) {
+            let num = parseInt(input, 10);
+            if (!isNaN(num) && num >= 0 && num <= 360) {
+                currentProgressCount = num;
+                updateUI();
+            } else {
+                alert("请输入合法的 0 到 360 之间的数值！");
+            }
+        }
+    }
+
+    function activate贤者之石Power() {
+        isStonePowerActive = true;
+        isDenyingState = false;
+        let board = document.getElementById('info-board');
+        board.className = 'result-container stone-mode-active';
+        board.querySelector('.result-label').innerText = "贤者之石生效：请点击点亮任意律";
+    }
+
+    function trigger自选SettleWindow() {
+        if (isDenyingState) return;
+        let key = currentAlchemyText;
+        if(key === "法则 (稀有)") key = "稀有炼成";
+        if(key === "法则 (普通)") key = "普通炼成";
+
+        document.getElementById('settle-title').innerHTML = `🎉 达成【${currentAlchemyText}】`;
+        let poolArea = document.getElementById('self-select-reward-pool-area');
+        poolArea.innerHTML = '';
+        selectedRewardItemIndex = -1;
+
+        let items = pools[key] || pools["失败炼成"];
+        items.forEach((item, index) => {
+            let box = document.createElement('div');
+            box.className = 'reward-item';
+            box.id = `reward-opt-${index}`;
+            box.innerHTML = `<span>${item.name}</span><span style="color:#ebdcb9; font-weight:bold;">${item.count}</span>`;
+            box.onclick = () => {
+                if(selectedRewardItemIndex !== -1) {
+                    document.getElementById(`reward-opt-${selectedRewardItemIndex}`).classList.remove('selected');
+                }
+                selectedRewardItemIndex = index;
+                box.classList.add('selected');
+            };
+            poolArea.appendChild(box);
+        });
+        document.getElementById('settle-modal').style.display = 'flex';
+    }
+
+    function abortSettleWindow() {
+        document.getElementById('settle-modal').style.display = 'none';
+    }
+
+    function confirmAndClaimSelectedReward() {
+        if(selectedRewardItemIndex === -1) {
+            alert("请选择奖励！");
+            return;
+        }
+        document.getElementById('settle-modal').style.display = 'none';
+        if (currentProgressCount < 360) currentProgressCount++;
+        resetGame();
+    }
+
+    function updateUI() {
+        let currentCost = getCost(revealCount + 1);
+        let board = document.getElementById('info-board');
+        let denyBtn = document.getElementById('deny-toggle-btn');
+        let claimBtn = document.getElementById('claim-btn-node');
+        
+        document.getElementById('current-p-num').innerText = currentProgressCount;
+        let percent = (currentProgressCount / 360) * 100;
+        document.getElementById('progress-indicator').style.height = `${percent}%`;
+
+        let stoneBtn = document.getElementById('stone-btn');
+        if (currentProgressCount >= 360) {
+            stoneBtn.style.display = 'block';
+        } else {
+            stoneBtn.style.display = 'none';
+        }
+
+        if(isCustomMode) {
+            document.getElementById('stat-left').innerHTML = `🛠️ 自定义模式`;
+            document.getElementById('btn-group-standard').style.display = "none";
+            document.getElementById('btn-group-reveal').style.display = "none";
+            document.getElementById('btn-group-custom').style.display = "flex";
+        } else {
+            document.getElementById('stat-left').innerHTML = `棱锥:${currentCost.lz} &nbsp;&nbsp; 魔晶:${currentCost.mj} &nbsp;&nbsp; 启示:${revealCount}次`;
+            document.getElementById('btn-group-custom').style.display = "none";
+            
+            if(litPoints.length === 6 || isStoneSettled) {
+                document.getElementById('btn-group-standard').style.display = "none";
+                document.getElementById('btn-group-reveal').style.display = "flex";
+                
+                if(isDenyingState) {
+                    board.className = 'result-container deny-mode-active';
+                    board.querySelector('.result-label').innerText = "请选择要否定的律";
+                    denyBtn.innerText = "取消";
+                    denyBtn.style.background = "#e74c3c"; denyBtn.style.color = "#fff";
+                    claimBtn.style.background = "#526b7c"; claimBtn.style.color = "#a0b4c2";
+                } else {
+                    if(!isStonePowerActive) board.className = 'result-container';
+                    denyBtn.innerText = "否定";
+                    denyBtn.style.background = "#d4b680"; denyBtn.style.color = "#1a2630";
+                    claimBtn.style.background = "#d4b680"; claimBtn.style.color = "#1a2630";
+                    
+                    if(isStoneSettled) {
+                        denyBtn.style.background = "#526b7c"; denyBtn.style.color = "#a0b4c2";
+                    }
+                }
+            } else {
+                document.getElementById('btn-group-standard').style.display = "flex";
+                document.getElementById('btn-group-reveal').style.display = "none";
+                if(!isStonePowerActive) board.className = 'result-container';
+                isDenyingState = false;
+            }
+        }
+
+        let godScores = Array(9).fill(0);
+        litPoints.forEach(pt => godScores[Math.floor(pt / 3)]++);
+
+        for(let godId = 0; godId < 9; godId++) {
+            let nodeEl = document.getElementById(`node-${godId}`);
+            if(godScores[godId] === 3) nodeEl.classList.add('completed');
+            else nodeEl.classList.remove('completed');
+
+            let container = document.getElementById(`god-${godId}`);
+            for(let i = 0; i < 3; i++) {
+                let globalIdx = godId * 3 + i;
+                if(litPoints.includes(globalIdx)) container.children[i].classList.add('active');
+                else container.children[i] ? container.children[i].classList.remove('active') : null;
+            }
+        }
+
+        if (!isDenyingState && !isStonePowerActive) {
+            evaluateAlchemy();
+        }
+    }
+
+    // 💥 精准数学判定重构核心代码区域
+    function evaluateAlchemy() {
+        let godScores = Array(9).fill(0);
+        litPoints.forEach(pt => godScores[Math.floor(pt / 3)]++);
+
+        let truthCount = 0;
+        for(let i = 0; i < 9; i++) { if(godScores[i] === 3) truthCount++; }
+
+        let standardLaws = 0;
+        let goldenLaws = 0;
+
+        // 黄金法则
+        let gLawMin = Math.min(godScores[0], godScores[1], godScores[2]);
+        if (gLawMin > 0) goldenLaws = gLawMin;
+
+        // 舒/泰芙努特 代际关系
+        if (godScores[3] > 0 && godScores[4] > 0) {
+            let pairCount = Math.min(godScores[3], godScores[4]);
+            if (godScores[1] > 0) standardLaws += Math.min(godScores[1], pairCount);
+            if (godScores[2] > 0) standardLaws += Math.min(godScores[2], pairCount);
+        }
+
+        // 盖布/努特 代际关系
+        let activeLayer4Gods = [5, 6, 7, 8].filter(id => godScores[id] > 0);
+        if (activeLayer4Gods.length >= 2) {
+            if (godScores[3] > 0) standardLaws++;
+            if (godScores[4] > 0) standardLaws++;
+        }
+
+        let totalLaws = standardLaws + goldenLaws;
+        let resultLabel = document.getElementById('alchemy-result');
+
+        if (truthCount >= 2 || goldenLaws >= 2) {
+            currentAlchemyText = "奇迹炼成";
+        } else if (
+            (truthCount === 1 && totalLaws >= 1) || 
+            (standardLaws >= 2) || 
+            (truthCount === 0 && goldenLaws === 2)
+        ) {
+            // 完美对齐：1个真理+1个法则，或者2个完全相同的标准法则 ➔ 大师炼成
+            currentAlchemyText = "大师炼成";
+        } else if (truthCount === 1) {
+            currentAlchemyText = "杰出炼成";
+        } else if (totalLaws >= 2) {
+            // 完美包容：当触发 1黄金 + 1标准 时，因其属于不同的法则，回归为：法则 (稀有)
+            currentAlchemyText = "法则 (稀有)";
+        } else if (totalLaws === 1) {
+            currentAlchemyText = "法则 (普通)"; 
+        } else {
+            currentAlchemyText = "失败炼成";
+        }
+
+        resultLabel.innerText = currentAlchemyText;
+    }
+
+    initTrianglesDom();
+    resetGame();
+</script>
+</body>
+</html>
