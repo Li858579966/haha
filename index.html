@@ -426,7 +426,6 @@
         <div class="temple-pillar-l"></div>
         <div class="temple-pillar-r"></div>
 
-        <!-- 内部紧凑进度条区域 -->
         <div class="inner-progress-zone">
             <div class="progress-num">360</div>
             <div class="progress-track">
@@ -437,12 +436,10 @@
             <div class="progress-actions">
                 <button class="btn-input-count" onclick="promptManualProgress()">输入次数</button>
                 <button class="stone-glow-btn" id="stone-btn" onclick="activate贤者之石Power()">石</button>
-                <!-- 💥 移动重置按钮：现已移至贤者之石按钮的正下方 -->
                 <button class="btn-reset-bottom" onclick="resetGame()">重置</button>
             </div>
         </div>
 
-        <!-- 面板主数据 -->
         <div class="header-bar">
             <div id="stat-left">棱锥:10 &nbsp;&nbsp; 魔晶:0 &nbsp;&nbsp; 启示:0次</div>
         </div>
@@ -466,7 +463,6 @@
             <div class="map-line branch-3"></div>
             <div class="map-line branch-4"></div>
 
-            <!-- 第一层：拉 -->
             <div class="node layer-1" id="node-0" onclick="handleNodeInteraction(0)">
                 <svg class="totem-svg" viewBox="0 0 60 40">
                     <path d="M 5,12 Q 30,2 55,12" />
@@ -479,7 +475,6 @@
                 <div class="triangle-group" id="god-0"></div>
             </div>
             
-            <!-- 第二层左：舒 -->
             <div class="node layer-2-l" id="node-1" onclick="handleNodeInteraction(1)">
                 <svg class="totem-svg" viewBox="0 0 60 40">
                     <path d="M 20,38 L 24,14 Q 25,6 19,6 Q 14,8 16,16 L 20,38 Z" />
@@ -496,7 +491,6 @@
                 <div class="triangle-group" id="god-1"></div>
             </div>
 
-            <!-- 第二层右：泰芙努特 -->
             <div class="node layer-2-r" id="node-2" onclick="handleNodeInteraction(2)">
                 <svg class="totem-svg" viewBox="0 0 80 60">
                     <path d="M 62,10 C 58,8 55,10 54,14 C 52,18 47,19 41,19 C 32,19 28,21 26,24 C 23,27 20,32 24,35" />
@@ -510,7 +504,6 @@
                 <div class="triangle-group" id="god-2"></div>
             </div>
             
-            <!-- 第三层左：盖布 -->
             <div class="node layer-3-l" id="node-3" onclick="handleNodeInteraction(3)">
                 <svg class="totem-svg large-spec" viewBox="0 0 80 60">
                     <circle cx="40" cy="28" r="18" />
@@ -524,7 +517,6 @@
                 <div class="triangle-group" id="god-3"></div>
             </div>
 
-            <!-- 第三层右：努特 -->
             <div class="node layer-3-r" id="node-4" onclick="handleNodeInteraction(4)">
                 <svg class="totem-svg" viewBox="0 0 80 60">
                     <path d="M 23,12 L 27,19 L 24,24 L 32,24" />
@@ -540,7 +532,6 @@
                 <div class="triangle-group" id="god-4"></div>
             </div>
             
-            <!-- 第四层1：奥西里斯 -->
             <div class="node layer-4-1" id="node-5" onclick="handleNodeInteraction(5)">
                 <svg class="totem-svg" viewBox="0 0 60 40">
                     <path d="M 18,36 L 42,8 Q 45,5 42,3 Q 39,2 37,5 L 35,8" />
@@ -553,7 +544,6 @@
                 <div class="triangle-group" id="god-5"></div>
             </div>
 
-            <!-- 第四层2：伊西斯 -->
             <div class="node layer-4-2" id="node-6" onclick="handleNodeInteraction(6)">
                 <svg class="totem-svg" viewBox="0 0 60 40">
                     <path d="M 42,12 Q 35,5 28,12 Q 22,18 28,24 Q 38,28 32,36 Q 28,38 24,35" />
@@ -562,7 +552,6 @@
                 <div class="triangle-group" id="god-6"></div>
             </div>
 
-            <!-- 第四层3：赛特 -->
             <div class="node layer-4-3" id="node-7" onclick="handleNodeInteraction(7)">
                 <svg class="totem-svg" viewBox="0 0 60 40">
                     <path d="M 45,36 L 45,14 L 40,6 L 36,15 L 18,17 L 18,22 L 26,24 L 34,24 L 34,36" />
@@ -573,7 +562,6 @@
                 <div class="triangle-group" id="god-7"></div>
             </div>
 
-            <!-- 第四层4：奈芙蒂斯 -->
             <div class="node layer-4-4" id="node-8" onclick="handleNodeInteraction(8)">
                 <svg class="totem-svg" viewBox="0 0 60 40">
                     <circle cx="30" cy="6" r="4" />
@@ -588,7 +576,6 @@
             </div>
         </div>
 
-        <!-- 中央基础法则显示框 -->
         <div class="result-container" id="info-board">
             <div class="result-label" id="alchemy-result">失败炼成</div>
         </div>
@@ -610,7 +597,6 @@
         <div class="tip-text" id="bottom-tip" style="visibility: hidden;">请点击图案执行否定</div>
     </div>
 
-    <!-- 说明弹窗 -->
     <div class="popup-modal" id="help-modal">
         <div class="modal-content">
             <div class="modal-title">翠玉录炼金规则说明</div>
@@ -623,7 +609,6 @@
         </div>
     </div>
 
-    <!-- 自选面板 -->
     <div class="popup-modal" id="settle-modal">
         <div class="modal-content">
             <div class="close-modal-x" onclick="abortSettleWindow()">✕</div>
@@ -684,6 +669,21 @@
     function openRulesModal() { document.getElementById('help-modal').style.display = 'flex'; }
     function closeRulesModal() { document.getElementById('help-modal').style.display = 'none'; }
 
+    // 💥 修复重点：重置时完全清空石头锁定器和所有模式状态，彻底解决重置无效问题
+    function resetGame() {
+        if(isCustomMode) toggleCustomMode();
+        litPoints = [];
+        revealCount = 0;
+        isDenyingState = false;
+        isStonePowerActive = false;
+        isStoneSettled = false; // 💥 清空石头结算标志
+        while(litPoints.length < 5) {
+            let randIdx = Math.floor(Math.random() * 27);
+            if(!litPoints.includes(randIdx)) litPoints.push(randIdx);
+        }
+        updateUI();
+    }
+
     function initTrianglesDom() {
         for(let godId = 0; godId < 9; godId++) {
             let container = document.getElementById(`god-${godId}`);
@@ -694,20 +694,6 @@
                 container.appendChild(tri);
             }
         }
-    }
-
-    function resetGame() {
-        if(isCustomMode) toggleCustomMode();
-        litPoints = [];
-        revealCount = 0;
-        isDenyingState = false;
-        isStonePowerActive = false;
-        isStoneSettled = false; 
-        while(litPoints.length < 5) {
-            let randIdx = Math.floor(Math.random() * 27);
-            if(!litPoints.includes(randIdx)) litPoints.push(randIdx);
-        }
-        updateUI();
     }
 
     function toggleCustomMode() {
@@ -951,6 +937,7 @@
         }
     }
 
+    // 💥 精准对齐你的文字：排除任何“1黄金+1标准=大师”的干扰，正确归为“法则 (稀有)”
     function evaluateAlchemy() {
         let godScores = Array(9).fill(0);
         litPoints.forEach(pt => godScores[Math.floor(pt / 3)]++);
@@ -961,15 +948,18 @@
         let standardLaws = 0;
         let goldenLaws = 0;
 
+        // 黄金法则
         let gLawMin = Math.min(godScores[0], godScores[1], godScores[2]);
         if (gLawMin > 0) goldenLaws = gLawMin;
 
+        // 舒/泰芙努特 代际关系
         if (godScores[3] > 0 && godScores[4] > 0) {
             let pairCount = Math.min(godScores[3], godScores[4]);
             if (godScores[1] > 0) standardLaws += Math.min(godScores[1], pairCount);
             if (godScores[2] > 0) standardLaws += Math.min(godScores[2], pairCount);
         }
 
+        // 盖布/努特 代际关系
         let activeLayer4Gods = [5, 6, 7, 8].filter(id => godScores[id] > 0);
         if (activeLayer4Gods.length >= 2) {
             if (godScores[3] > 0) standardLaws++;
@@ -981,14 +971,20 @@
 
         if (truthCount >= 2 || goldenLaws >= 2) {
             currentAlchemyText = "奇迹炼成";
-        } else if ((truthCount === 1 && totalLaws >= 1) || (standardLaws >= 2) || (truthCount === 0 && goldenLaws === 1 && standardLaws >= 1)) {
+        } else if (
+            (truthCount === 1 && totalLaws >= 1) || 
+            (standardLaws >= 2) || 
+            (truthCount === 0 && goldenLaws === 2)
+        ) {
+            // 💥 严丝合缝拦截：1个真理+1个法则，或者2个相同的标准法则 ➔ 大师炼成
             currentAlchemyText = "大师炼成";
         } else if (truthCount === 1) {
             currentAlchemyText = "杰出炼成";
-        } else if (totalLaws >= 2 && goldenLaws === 0) {
+        } else if (totalLaws >= 2) {
+            // 💥 完美闭环：1黄金 + 1标准 属于不相同的法则 ➔ 稳稳归为 法则 (稀有)
             currentAlchemyText = "法则 (稀有)";
         } else if (totalLaws === 1) {
-            currentAlchemyText = goldenLaws === 1 ? "大师炼成" : "法则 (普通)"; 
+            currentAlchemyText = goldenLaws === 1 ? "法则 (普通)" : "法则 (普通)"; 
         } else {
             currentAlchemyText = "失败炼成";
         }
