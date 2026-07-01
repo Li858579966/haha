@@ -338,7 +338,7 @@
             position: fixed;
             top: 0; bottom: 0; left: 0; right: 0;
             background: rgba(0,0,0,0.85);
-            z-index: 999;
+            z-index: 9999;
             display: none;
             justify-content: center;
             align-items: center;
@@ -712,7 +712,7 @@
         </div>
     </div>
 
-<div class="popup-modal" id="input-manual-modal">
+    <div class="popup-modal" id="input-manual-modal">
         <div class="modal-content">
             <div class="close-modal-x" onclick="closeInputModal()">✕</div>
             <div class="modal-title">设定炼金进度</div>
@@ -728,9 +728,6 @@
             <div class="modal-title" id="settle-title">自选炼成奖品</div>
             <div class="reward-tip-info">请在下方奖励池中手动点击挑选一个您最想要的：</div>
             <div id="self-select-reward-pool-area"></div>
-            <button onclick="confirmAndClaimSelectedReward()" style="width:100%; margin-top:10px; background:#bfa980; color:#1a2630; border:none; padding:12px; font-weight:bold; border-radius:4px; cursor:pointer; letter-spacing:1px;">确认收下自选奖励</button>
-        </div>
-    </div>
             <button onclick="confirmAndClaimSelectedReward()" style="width:100%; margin-top:10px; background:#bfa980; color:#1a2630; border:none; padding:12px; font-weight:bold; border-radius:4px; cursor:pointer; letter-spacing:1px;">确认收下自选奖励</button>
         </div>
     </div>
@@ -1119,7 +1116,6 @@ function confirmManualProgress() {
             evaluateAlchemy();
         }
     }
-
 function evaluateAlchemy() {
     let godScores = Array(9).fill(0);
     litPoints.forEach(pt => godScores[Math.floor(pt / 3)]++);
@@ -1128,33 +1124,36 @@ function evaluateAlchemy() {
     let truthCount = 0;
     for(let i = 0; i < 9; i++) { if(godScores[i] === 3) truthCount++; }
 
-    // 2. 法则统计 (增加门槛以过滤散点)
+    // 2. 法则统计 (局部修正：允许点数突破 1，从而正确识别“2个相同普通法则”)
     let lawShu = 0, lawTef = 0, lawGeb = 0, lawNut = 0;
     let goldenLaws = Math.min(godScores[0], godScores[1], godScores[2]);
 
-    // 舒/泰法则：只有当 3和4层 同时存在，且配对数 >= 2 时才贡献法则
+    // 舒/泰法则
     if (godScores[3] > 0 && godScores[4] > 0) {
         let pairCount = Math.min(godScores[3], godScores[4]);
         if (pairCount >= 2) { 
-            lawShu = (godScores[1] > 0) ? 1 : 0;
-            lawTef = (godScores[2] > 0) ? 1 : 0;
+            // 改为 Math.min，根据点亮的三角实际数量动态计算，不再死锁在 1
+            lawShu = (godScores[1] > 0) ? Math.min(godScores[1], pairCount) : 0;
+            lawTef = (godScores[2] > 0) ? Math.min(godScores[2], pairCount) : 0;
         }
     }
 
-    // 盖布/努特法则：只有后裔律点总数 >= 2 且形成跨神祇配对时才贡献法则
+    // 盖布/努特法则
     let layer4Counts = [5, 6, 7, 8].map(id => godScores[id] < 3 ? godScores[id] : 0);
     let sum4 = layer4Counts.reduce((a, b) => a + b, 0); 
     let active4Count = layer4Counts.filter(x => x > 0).length;
     
     if (sum4 >= 2 && active4Count >= 2) {
         let pairPool = Math.floor(sum4 / 2);
-        lawGeb = (godScores[3] > 0) ? 1 : 0;
-        lawNut = (godScores[4] > 0) ? 1 : 0;
+        lawGeb = (godScores[3] > 0) ? Math.min(godScores[3], pairPool) : 0;
+        lawNut = (godScores[4] > 0) ? Math.min(godScores[4], pairPool) : 0;
     }
 
     let totalOrdinaryLaws = lawShu + lawTef + lawGeb + lawNut;
     let totalLaws = goldenLaws + totalOrdinaryLaws;
-    let hasTwoIdenticalOrdinaryLaws = (lawShu >= 2 || lawTef >= 2 || lawGeb >= 2 || lawNut >= 2);
+    
+    // 局部修正：如果普通法则总数 >= 2，或者单项法则 >= 2，则判定为存在两个相同普通法则
+    let hasTwoIdenticalOrdinaryLaws = (lawShu >= 2 || lawTef >= 2 || lawGeb >= 2 || lawNut >= 2 || totalOrdinaryLaws >= 2);
 
     // 3. 严格遵循优先级判定
     let resultLabel = document.getElementById('alchemy-result');
@@ -1185,7 +1184,8 @@ function evaluateAlchemy() {
 
     resultLabel.innerText = currentAlchemyText;
 }
-    initTrianglesDom();
+
+   initTrianglesDom();
     resetGame();
 </script>
 </body>
