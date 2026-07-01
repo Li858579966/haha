@@ -712,12 +712,25 @@
         </div>
     </div>
 
+<div class="popup-modal" id="input-manual-modal">
+        <div class="modal-content">
+            <div class="close-modal-x" onclick="closeInputModal()">✕</div>
+            <div class="modal-title">设定炼金进度</div>
+            <input type="number" id="manual-count-input" placeholder="请输入 0-360" 
+                   style="width:100%; margin:20px 0; padding:12px; background:#1a2630; border:1px solid #bfa980; color:#fff; border-radius:4px; box-sizing:border-box;">
+            <button onclick="confirmManualProgress()" style="width:100%; background:#bfa980; color:#1a2630; border:none; padding:12px; font-weight:bold; border-radius:4px; cursor:pointer;">确定</button>
+        </div>
+    </div>
+
     <div class="popup-modal" id="settle-modal">
         <div class="modal-content">
             <div class="close-modal-x" onclick="abortSettleWindow()">✕</div>
             <div class="modal-title" id="settle-title">自选炼成奖品</div>
             <div class="reward-tip-info">请在下方奖励池中手动点击挑选一个您最想要的：</div>
             <div id="self-select-reward-pool-area"></div>
+            <button onclick="confirmAndClaimSelectedReward()" style="width:100%; margin-top:10px; background:#bfa980; color:#1a2630; border:none; padding:12px; font-weight:bold; border-radius:4px; cursor:pointer; letter-spacing:1px;">确认收下自选奖励</button>
+        </div>
+    </div>
             <button onclick="confirmAndClaimSelectedReward()" style="width:100%; margin-top:10px; background:#bfa980; color:#1a2630; border:none; padding:12px; font-weight:bold; border-radius:4px; cursor:pointer; letter-spacing:1px;">确认收下自选奖励</button>
         </div>
     </div>
@@ -946,18 +959,29 @@
         updateUI();
     }
 
-    function promptManualProgress() {
-        let input = prompt("请输入指定的炼金判定次数（0 - 360）：", currentProgressCount);
-        if (input !== null) {
-            let num = parseInt(input, 10);
-            if (!isNaN(num) && num >= 0 && num <= 360) {
-                currentProgressCount = num;
-                updateUI();
-            } else {
-                alert("请输入合法的 0 到 360 之间的数值！");
-            }
-        }
+    // 打开输入框
+function promptManualProgress() {
+    document.getElementById('input-manual-modal').style.display = 'flex';
+}
+
+// 关闭输入框
+function closeInputModal() {
+    document.getElementById('input-manual-modal').style.display = 'none';
+}
+
+// 确认逻辑
+function confirmManualProgress() {
+    let input = document.getElementById('manual-count-input').value;
+    let num = parseInt(input, 10);
+    
+    if (!isNaN(num) && num >= 0 && num <= 360) {
+        currentProgressCount = num;
+        updateUI();
+        closeInputModal(); // 输入成功后自动关闭
+    } else {
+        alert("请输入 0 到 360 之间的数字！");
     }
+}
 
     function activate贤者之石Power() {
         isStonePowerActive = true;
