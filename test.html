@@ -19,7 +19,6 @@
             box-sizing: border-box;
             user-select: none;
         }
-        /* 主神庙长方形容器 */
         .temple-wrapper {
             width: 100%;
             max-width: 460px;
@@ -30,8 +29,6 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.7);
             border-bottom: 8px solid #233b47; 
         }
-        
-        /* 外围墙柱 */
         .temple-wrapper::before {
             content: "";
             position: absolute;
@@ -100,7 +97,6 @@
             z-index: 5;
         }
 
-        /* ======= 进度条高度和重置按钮位置 ======= */
         .inner-progress-zone {
             position: absolute;
             right: 16px;
@@ -172,7 +168,6 @@
             text-align: center;
         }
 
-        /* ======= 金字塔骨架画布 ======= */
         .canvas-area {
             width: 100%;
             height: 420px;
@@ -195,7 +190,6 @@
         .branch-3 { width: 2px; height: 20px; left: 55.8%; top: 257px; }
         .branch-4 { width: 2px; height: 20px; left: 77.5%; top: 257px; }
 
-        /* 节点定位 */
         .node {
             position: absolute;
             transform: translateX(-50%);
@@ -240,7 +234,6 @@
             transition: all 0.3s ease;
         }
 
-        /* 发光状态 */
         .node.completed .totem-svg path, 
         .node.completed .totem-svg line, 
         .node.completed .totem-svg polyline, 
@@ -269,7 +262,6 @@
             filter: drop-shadow(0 0 6px #64ffda);
         }
         
-        /* 底部状态提示总框 */
         .result-container {
             width: 100%;
             background-color: rgba(0, 0, 0, 0.4);
@@ -333,7 +325,6 @@
             text-align: center;
         }
 
-        /* 遮罩层 */
         .popup-modal {
             position: fixed;
             top: 0; bottom: 0; left: 0; right: 0;
@@ -402,7 +393,6 @@
             border-color: #64ffda !important;
         }
 
-        /* ======= 公告弹窗系统专属样式组 ======= */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -504,6 +494,7 @@
         </div>
     </div>
 
+    <!-- 💥 修改区：这里调整了排版，增加了消耗统计 -->
     <div id="claimGroupModal" class="modal-overlay" style="display: none; z-index: 10000;">
         <div class="modal-card" style="border-color: #00ffcc;">
             <div class="modal-header" style="background: linear-gradient(135deg, #161b26, #112824);">
@@ -513,7 +504,10 @@
                 <div style="font-size: 18px; font-weight: bold; color: #ffffff; margin-bottom: 15px;">
                     请到交流群内领取哦！
                 </div>
-                <div style="color: #a0aec0; font-size: 14px; margin-bottom: 5px;">
+                <div style="color: #f1c40f; font-size: 14px; font-weight: bold; margin-bottom: 15px;">
+                    本次消耗：棱锥：<span id="total-lz-cost">0</span>  魔晶：<span id="total-mj-cost">0</span>
+                </div>
+                <div style="color: #a0aec0; font-size: 14px;">
                     仅供娱乐感谢您的使用，下步会在开发群开发更多功能哦~
                 </div>
             </div>
@@ -523,6 +517,7 @@
             </div>
         </div>
     </div>
+    <!-- 💥 修改区结束 -->
 
     <div class="temple-wrapper">
         <div class="temple-pillar-l"></div>
@@ -544,7 +539,7 @@
         </div>
 
         <div class="header-bar">
-            <div id="stat-left">棱锥:10 &nbsp;&nbsp; 魔晶:0 &nbsp;&nbsp; 启示:0次</div><div style="font-size: 12px; color: #4ee0cd; font-weight: bold;"><span id="busuanzi_container_site_pv"> 访问量:<span id="busuanzi_value_site_pv">...</span>次</span></div>
+            <div id="stat-left">棱锥:10 &nbsp;&nbsp; 魔晶:0 &nbsp;&nbsp; 启示:1次</div><div style="font-size: 12px; color: #4ee0cd; font-weight: bold;"><span id="busuanzi_container_site_pv"> 访问量:<span id="busuanzi_value_site_pv">...</span>次</span></div>
         </div>
 
         <div class="top-buttons">
@@ -734,45 +729,34 @@
 
 <script>
     function getCost(gear) {
-        if (gear >= 9) {
-            return { lz: 1500, mj: 750 };
-        }
+        if (gear >= 9) { return { lz: 1500, mj: 750 }; }
         let lz = 10 * Math.pow(2, gear - 1);
         let mj = (gear === 1) ? 0 : lz / 2;
         return { lz: lz, mj: mj };
     }
 
+    // 💥 新增功能：计算总消耗
+    function getTotalCost(times) {
+        let totalLz = 0, totalMj = 0;
+        for (let i = 1; i <= times; i++) {
+            let cost = getCost(i);
+            totalLz += cost.lz;
+            totalMj += cost.mj;
+        }
+        return { lz: totalLz, mj: totalMj };
+    }
+
     const pools = {
-        "奇迹炼成": [
-            { name: "星神战车", count: "1个" }, { name: "琼娥-乘风归", count: "1个" },
-            { name: "奇美拉", count: "1个" }, { name: "库露娜", count: "1个" },
-            { name: "辉光御座", count: "1个" }, { name: "尼德霍格", count: "1个" },
-            { name: "应龙宝宝", count: "1个" }
-        ],
-        "大师炼成": [
-            { name: "古墓头饰", count: "1个" }, { name: "古墓上装", count: "1个" },
-            { name: "古墓下装", count: "1个" }, { name: "藏宝卷封", count: "16个" }
-        ],
-        "杰出炼成": [
-            { name: "进化果实碎片", count: "4个" }, { name: "传送卷轴", count: "100个" },
-            { name: "部落传送石", count: "150个" }, { name: "藏宝卷封", count: "6个" }
-        ],
-        "稀有炼成": [
-            { name: "太阳碎片", count: "1个" }, { name: "气雨之息", count: "3个" },
-            { name: "苁蓉花", count: "1个" }, { name: "藏宝卷封", count: "2个" }
-        ],
-        "普通炼成": [
-            { name: "圣甲虫", count: "1个" }, { name: "诅咒附魔师I", count: "1个" },
-            { name: "机械附魔师I", count: "1个" }, { name: "城邦币", count: "3个" }
-        ],
-        "失败炼成": [
-            { name: "祖母绿矿", count: "5个" }, { name: "诅咒棱锥", count: "5个" },
-            { name: "魔晶", count: "5个" }, { name: "城邦币", count: "1个" }
-        ]
+        "奇迹炼成": [ { name: "星神战车", count: "1个" }, { name: "琼娥-乘风归", count: "1个" }, { name: "奇美拉", count: "1个" }, { name: "库露娜", count: "1个" }, { name: "辉光御座", count: "1个" }, { name: "尼德霍格", count: "1个" }, { name: "应龙宝宝", count: "1个" } ],
+        "大师炼成": [ { name: "古墓头饰", count: "1个" }, { name: "古墓上装", count: "1个" }, { name: "古墓下装", count: "1个" }, { name: "藏宝卷封", count: "16个" } ],
+        "杰出炼成": [ { name: "进化果实碎片", count: "4个" }, { name: "传送卷轴", count: "100个" }, { name: "部落传送石", count: "150个" }, { name: "藏宝卷封", count: "6个" } ],
+        "稀有炼成": [ { name: "太阳碎片", count: "1个" }, { name: "气雨之息", count: "3个" }, { name: "苁蓉花", count: "1个" }, { name: "藏宝卷封", count: "2个" } ],
+        "普通炼成": [ { name: "圣甲虫", count: "1个" }, { name: "诅咒附魔师I", count: "1个" }, { name: "机械附魔师I", count: "1个" }, { name: "城邦币", count: "3个" } ],
+        "失败炼成": [ { name: "祖母绿矿", count: "5个" }, { name: "诅咒棱锥", count: "5个" }, { name: "魔晶", count: "5个" }, { name: "城邦币", count: "1个" } ]
     };
 
     let litPoints = []; 
-    let revealCount = 0; 
+    let revealCount = 1; 
     let isDenyingState = false;   
     let isCustomMode = false;     
     let isStonePowerActive = false; 
@@ -787,15 +771,21 @@
 
     function closeWelcomeModal() {
         var modal = document.getElementById('announcementModal');
-        if (modal) {
-            modal.style.display = 'none';
+        if (modal) { 
+            modal.style.display = 'none'; 
+            resetGame(); 
         }
     }
 
-    // 💥 控制加群反馈引导弹窗的开闭
     function openClaimGroupModal() {
         var modal = document.getElementById('claimGroupModal');
-        if (modal) modal.style.display = 'flex';
+        if (modal) {
+            // 💥 在弹窗打开时，计算并填入总消耗数据
+            let totalCost = getTotalCost(revealCount);
+            document.getElementById('total-lz-cost').innerText = totalCost.lz;
+            document.getElementById('total-mj-cost').innerText = totalCost.mj;
+            modal.style.display = 'flex';
+        }
     }
     function closeClaimGroupModal() {
         var modal = document.getElementById('claimGroupModal');
@@ -817,7 +807,7 @@
     function resetGame() {
         if(isCustomMode) toggleCustomMode();
         litPoints = [];
-        revealCount = 0;
+        revealCount = 1;
         isDenyingState = false;
         isStonePowerActive = false;
         isStoneSettled = false; 
@@ -882,10 +872,7 @@
             let activeInGod = litPoints.filter(p => Math.floor(p / 3) === godId);
             if (litPoints.length < 6) {
                 if (activeInGod.length < 3) {
-                    for(let i=0; i<3; i++) {
-                        let pIdx = godId * 3 + i;
-                        if(!litPoints.includes(pIdx)) { litPoints.push(pIdx); break; }
-                    }
+                    for(let i=0; i<3; i++) { let pIdx = godId * 3 + i; if(!litPoints.includes(pIdx)) { litPoints.push(pIdx); break; } }
                 } else {
                     let target = activeInGod[activeInGod.length - 1];
                     litPoints = litPoints.filter(p => p !== target);
@@ -913,17 +900,12 @@
 
     function doReveal() {
         if(litPoints.length >= 6) return; 
-        
-        if(isCustomMode && litPoints.length < 5) {
-            alert("自定义模式下，请先选满5个律再进行最后一个启示！");
-            return;
-        }
+        if(isCustomMode && litPoints.length < 5) { alert("自定义模式下，请先选满5个律再进行最后一个启示！"); return; }
 
         let unlitPoints = [];
         for(let i = 0; i < 27; i++) { if(!litPoints.includes(i)) unlitPoints.push(i); }
-        
         let godScores = Array(9).fill(0);
-        litPoints.forEach(pt => godScores[Math.floor(pt / 3)]++);
+        litPoints.forEach(pt => { godScores[Math.floor(pt / 3)]++; });
         
         let weights = [];
         let totalWeight = 0;
@@ -956,29 +938,17 @@
         updateUI();
     }
 
-    // 打开输入框
-function promptManualProgress() {
-    document.getElementById('input-manual-modal').style.display = 'flex';
-}
-
-// 关闭输入框
-function closeInputModal() {
-    document.getElementById('input-manual-modal').style.display = 'none';
-}
-
-// 确认逻辑
-function confirmManualProgress() {
-    let input = document.getElementById('manual-count-input').value;
-    let num = parseInt(input, 10);
-    
-    if (!isNaN(num) && num >= 0 && num <= 360) {
-        currentProgressCount = num;
-        updateUI();
-        closeInputModal(); // 输入成功后自动关闭
-    } else {
-        alert("请输入 0 到 360 之间的数字！");
+    function promptManualProgress() { document.getElementById('input-manual-modal').style.display = 'flex'; }
+    function closeInputModal() { document.getElementById('input-manual-modal').style.display = 'none'; }
+    function confirmManualProgress() {
+        let input = document.getElementById('manual-count-input').value;
+        let num = parseInt(input, 10);
+        if (!isNaN(num) && num >= 0 && num <= 360) {
+            currentProgressCount = num;
+            updateUI();
+            closeInputModal();
+        } else { alert("请输入 0 到 360 之间的数字！"); }
     }
-}
 
     function activate贤者之石Power() {
         isStonePowerActive = true;
@@ -1017,175 +987,166 @@ function confirmManualProgress() {
         document.getElementById('settle-modal').style.display = 'flex';
     }
 
-    function abortSettleWindow() {
-        document.getElementById('settle-modal').style.display = 'none';
-    }
+    function abortSettleWindow() { document.getElementById('settle-modal').style.display = 'none'; }
 
-    // 💥 核心修正：当玩家点完即可炼成并收下奖品后，完美呼出群领奖提示窗
     function confirmAndClaimSelectedReward() {
-        if(selectedRewardItemIndex === -1) {
-            alert("请选择奖励！");
-            return;
-        }
+        if(selectedRewardItemIndex === -1) { alert("请选择奖励！"); return; }
         document.getElementById('settle-modal').style.display = 'none';
         if (currentProgressCount < 360) currentProgressCount++;
-        
-        // 呼出交流群提示窗口
         openClaimGroupModal();
-        
         resetGame();
     }
 
-    function updateUI() {
-        let currentCost = getCost(revealCount + 1);
-        let board = document.getElementById('info-board');
-        let denyBtn = document.getElementById('deny-toggle-btn');
-        let claimBtn = document.getElementById('claim-btn-node');
-        
-        document.getElementById('current-p-num').innerText = currentProgressCount;
-        let percent = (currentProgressCount / 360) * 100;
-        document.getElementById('progress-indicator').style.height = `${percent}%`;
-
-        let stoneBtn = document.getElementById('stone-btn');
-        if (currentProgressCount >= 360) {
-            stoneBtn.style.display = 'block';
-        } else {
-            stoneBtn.style.display = 'none';
-        }
-
-        if(isCustomMode) {
-            document.getElementById('stat-left').innerHTML = `🛠️ 自定义模式 (${litPoints.length}/6 律)`;
-        } else {
-            document.getElementById('stat-left').innerHTML = `棱锥:${currentCost.lz} &nbsp;&nbsp; 魔晶:${currentCost.mj} &nbsp;&nbsp; 启示:${revealCount}次`;
-        }
-        
-        document.getElementById('btn-group-custom').style.display = "none";
-        
-        if(litPoints.length === 6 || isStoneSettled) {
-            document.getElementById('btn-group-standard').style.display = "none";
-            document.getElementById('btn-group-reveal').style.display = "flex";
-            
-            if(isDenyingState) {
-                board.className = 'result-container deny-mode-active';
-                board.querySelector('.result-label').innerText = "请选择要否定的律";
-                denyBtn.innerText = "取消";
-                denyBtn.style.background = "#e74c3c"; denyBtn.style.color = "#fff";
-                claimBtn.style.background = "#526b7c"; claimBtn.style.color = "#a0b4c2";
-            } else {
-                if(isCustomMode) {
-                    board.className = 'result-container custom-mode-active';
-                } else {
-                    if(!isStonePowerActive) board.className = 'result-container';
-                }
-                denyBtn.innerText = "否定";
-                denyBtn.style.background = "#d4b680"; denyBtn.style.color = "#1a2630";
-                claimBtn.style.background = "#d4b680"; claimBtn.style.color = "#1a2630";
-                
-                if(isStoneSettled) {
-                    denyBtn.style.background = "#526b7c"; denyBtn.style.color = "#a0b4c2";
-                }
-            }
-        } else {
-            document.getElementById('btn-group-standard').style.display = "flex";
-            document.getElementById('btn-group-reveal').style.display = "none";
-            if(isCustomMode) {
-                board.className = 'result-container custom-mode-active';
-            } else {
-                if(!isStonePowerActive) board.className = 'result-container';
-            }
-            isDenyingState = false;
-        }
-
-        let godScores = Array(9).fill(0);
-        litPoints.forEach(pt => godScores[Math.floor(pt / 3)]++);
-
-        for(let godId = 0; godId < 9; godId++) {
-            let nodeEl = document.getElementById(`node-${godId}`);
-            if(godScores[godId] === 3) nodeEl.classList.add('completed');
-            else nodeEl.classList.remove('completed');
-
-            let container = document.getElementById(`god-${godId}`);
-            for(let i = 0; i < 3; i++) {
-                let globalIdx = godId * 3 + i;
-                if(litPoints.includes(globalIdx)) container.children[i].classList.add('active');
-                else container.children[i] ? container.children[i].classList.remove('active') : null;
-            }
-        }
-
-        if (!isDenyingState && !isStonePowerActive) {
-            evaluateAlchemy();
-        }
-    }
 function evaluateAlchemy() {
-    let godScores = Array(9).fill(0);
-    litPoints.forEach(pt => godScores[Math.floor(pt / 3)]++);
+    let counts = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+    litPoints.forEach(pt => { counts[Math.floor(pt / 3)]++; });
 
-    // 1. 真理统计
-    let truthCount = 0;
-    for(let i = 0; i < 9; i++) { if(godScores[i] === 3) truthCount++; }
+    let truthNodes = counts.map((v, i) => v === 3 ? i : -1).filter(v => v >= 0);
+    let truthCount = truthNodes.length;
 
-    // 2. 法则统计 (局部修正：允许点数突破 1，从而正确识别“2个相同普通法则”)
-    let lawShu = 0, lawTef = 0, lawGeb = 0, lawNut = 0;
-    let goldenLaws = Math.min(godScores[0], godScores[1], godScores[2]);
+    let lawPatterns = [
+        [0,1,2], // 黄金法则
+        [1,3,4], [2,3,4],
+        [3,5,6], [3,5,7], [3,5,8], [3,6,7], [3,6,8], [3,7,8],
+        [4,5,6], [4,5,7], [4,5,8], [4,6,7], [4,6,8], [4,7,8]
+    ];
 
-    // 舒/泰法则
-    if (godScores[3] > 0 && godScores[4] > 0) {
-        let pairCount = Math.min(godScores[3], godScores[4]);
-        if (pairCount >= 2) { 
-            // 改为 Math.min，根据点亮的三角实际数量动态计算，不再死锁在 1
-            lawShu = (godScores[1] > 0) ? Math.min(godScores[1], pairCount) : 0;
-            lawTef = (godScores[2] > 0) ? Math.min(godScores[2], pairCount) : 0;
+    function canForm(state, law) {
+        return state[law[0]] > 0 && state[law[1]] > 0 && state[law[2]] > 0;
+    }
+    
+    let maxLawCount = 0;
+    let bestCombination = [];
+    function dfs(state, count, combination, startIdx) {
+        if (count > maxLawCount) {
+            maxLawCount = count;
+            bestCombination = combination.slice();
+        }
+        for (let i = startIdx; i < lawPatterns.length; i++) {
+            let p = lawPatterns[i];
+            if (canForm(state, p)) {
+                state[p[0]]--; state[p[1]]--; state[p[2]]--;
+                combination.push(i);
+                dfs(state, count + 1, combination, i);
+                combination.pop();
+                state[p[0]]++; state[p[1]]++; state[p[2]]++;
+            }
+        }
+    }
+    dfs(counts.slice(), 0, [], 0);
+
+    let goldenCount = 0;
+    let commonMap = {};
+    for (let idx of bestCombination) {
+        let law = lawPatterns[idx];
+        if (law[0] === 0 && law[1] === 1 && law[2] === 2) {
+            goldenCount++;
+        } else {
+            let key = law.join('-');
+            commonMap[key] = (commonMap[key] || 0) + 1;
+        }
+    }
+    let commonLawsTotalInstances = Object.values(commonMap).reduce((a, b) => a + b, 0);
+    let commonLawsUniqueCount = Object.keys(commonMap).length;
+    let hasDuplicateCommon = Object.values(commonMap).some(v => v >= 2);
+
+    let hasCompatibleLaw = false;
+    for (let law of lawPatterns) {
+        let num = Math.min(counts[law[0]], counts[law[1]], counts[law[2]]);
+        if (num > 0) {
+            let conflict = false;
+            for (let tn of truthNodes) {
+                if (law.includes(tn)) { conflict = true; break; }
+            }
+            if (!conflict) {
+                hasCompatibleLaw = true;
+                break;
+            }
         }
     }
 
-    // 盖布/努特法则
-    let layer4Counts = [5, 6, 7, 8].map(id => godScores[id] < 3 ? godScores[id] : 0);
-    let sum4 = layer4Counts.reduce((a, b) => a + b, 0); 
-    let active4Count = layer4Counts.filter(x => x > 0).length;
-    
-    if (sum4 >= 2 && active4Count >= 2) {
-        let pairPool = Math.floor(sum4 / 2);
-        lawGeb = (godScores[3] > 0) ? Math.min(godScores[3], pairPool) : 0;
-        lawNut = (godScores[4] > 0) ? Math.min(godScores[4], pairPool) : 0;
+    let result = "失败炼成";
+
+    if (truthCount >= 2 || goldenCount >= 2) {
+        result = "奇迹炼成";
     }
-
-    let totalOrdinaryLaws = lawShu + lawTef + lawGeb + lawNut;
-    let totalLaws = goldenLaws + totalOrdinaryLaws;
-    
-    // 局部修正：如果普通法则总数 >= 2，或者单项法则 >= 2，则判定为存在两个相同普通法则
-    let hasTwoIdenticalOrdinaryLaws = (lawShu >= 2 || lawTef >= 2 || lawGeb >= 2 || lawNut >= 2 || totalOrdinaryLaws >= 2);
-
-    // 3. 严格遵循优先级判定
-    let resultLabel = document.getElementById('alchemy-result');
-
-    // 奇迹：2个真理 或 2个黄金法则
-    if (truthCount >= 2 || goldenLaws >= 2) {
-        currentAlchemyText = "奇迹炼成";
-    } 
-    // 大师：1个真理+1个及以上法则(含黄金) 或 2个相同普通法则
-    else if ((truthCount === 1 && totalLaws >= 1) || hasTwoIdenticalOrdinaryLaws) {
-        currentAlchemyText = "大师炼成";
-    } 
-    // 杰出：1个真理
+    else if ((hasCompatibleLaw && truthCount >= 1) || hasDuplicateCommon) {
+        result = "大师炼成";
+    }
     else if (truthCount >= 1) {
-        currentAlchemyText = "杰出炼成";
-    } 
-    // 稀有：2个及以上法则之和
-    else if (totalLaws >= 2) {
-        currentAlchemyText = "稀有炼成";
-    } 
-    // 普通：1个法则
-    else if (totalLaws === 1) {
-        currentAlchemyText = "普通炼成"; 
-    } 
-    else {
-        currentAlchemyText = "失败炼成";
+        result = "杰出炼成";
+    }
+    else if ((goldenCount >= 1 && commonLawsTotalInstances >= 1) || commonLawsUniqueCount >= 2) {
+        result = "稀有炼成";
+    }
+    else if (goldenCount >= 1 || commonLawsTotalInstances >= 1) {
+        result = "普通炼成";
     }
 
-    resultLabel.innerText = currentAlchemyText;
+    currentAlchemyText = result;
+    document.getElementById('alchemy-result').innerText = result;
 }
 
-   initTrianglesDom();
+    function updateUI() {
+        let godScores = Array(9).fill(0);
+        litPoints.forEach(pt => { godScores[Math.floor(pt / 3)]++; });
+
+        for (let godId = 0; godId < 9; godId++) {
+            let triangles = document.querySelectorAll(`#god-${godId} .triangle`);
+            let score = godScores[godId];
+            triangles.forEach((tri, idx) => {
+                if (idx < score) tri.classList.add('active');
+                else tri.classList.remove('active');
+            });
+            let node = document.getElementById(`node-${godId}`);
+            if (score >= 3) node.classList.add('completed');
+            else node.classList.remove('completed');
+        }
+
+        let cost = getCost(revealCount);
+        document.getElementById('stat-left').innerHTML = `棱锥:${cost.lz} &nbsp;&nbsp; 魔晶:${cost.mj} &nbsp;&nbsp; 启示:${revealCount}次`;
+
+        let progressPercent = (currentProgressCount / 360) * 100;
+        document.getElementById('progress-indicator').style.height = `${progressPercent}%`;
+        document.getElementById('current-p-num').innerText = currentProgressCount;
+
+        let stoneBtn = document.getElementById('stone-btn');
+        if (currentProgressCount >= 360 && !isStoneSettled) stoneBtn.style.display = 'block';
+        else stoneBtn.style.display = 'none';
+
+        let standardBtns = document.getElementById('btn-group-standard');
+        let revealBtns = document.getElementById('btn-group-reveal');
+        let customBtns = document.getElementById('btn-group-custom');
+        let tipText = document.getElementById('bottom-tip');
+
+        if (isCustomMode) {
+            standardBtns.style.display = 'none';
+            revealBtns.style.display = 'none';
+            customBtns.style.display = 'flex';
+            tipText.style.visibility = 'hidden';
+        } else if (litPoints.length >= 6) {
+            standardBtns.style.display = 'none';
+            revealBtns.style.display = 'flex';
+            customBtns.style.display = 'none';
+            if (isDenyingState) { tipText.style.visibility = 'visible'; tipText.innerText = '请点击图案执行否定'; } 
+            else { tipText.style.visibility = 'hidden'; }
+        } else {
+            standardBtns.style.display = 'flex';
+            revealBtns.style.display = 'none';
+            customBtns.style.display = 'none';
+            tipText.style.visibility = 'hidden';
+        }
+
+        let denyBtn = document.getElementById('deny-toggle-btn');
+        if (litPoints.length >= 6) {
+            denyBtn.style.background = isDenyingState ? '#e74c3c' : '#526b7c';
+            denyBtn.style.color = isDenyingState ? '#fff' : '#a0b4c2';
+        }
+
+        evaluateAlchemy();
+    }
+
+    initTrianglesDom();
     resetGame();
 </script>
 </body>
